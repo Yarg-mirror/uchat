@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net"
 )
@@ -25,7 +26,7 @@ func (s *Server) Serve(address string) {
 
 	connection, err := net.ListenUDP("udp", &localeAddress)
 	if err != nil {
-		log.Fatalf("Impossible d'écouter sur le port %d: %v", s.port, err)
+		log.Fatalf("Unable to list on port %d: %v", s.port, err)
 	}
 	log.Printf("UDP server listening on %s:%d", s.ip, s.port)
 	s.conn = connection
@@ -37,18 +38,39 @@ func (s *Server) Serve(address string) {
 			if errors.Is(err, net.ErrClosed) {
 				return
 			}
-			log.Printf("Erreur de lecture : %v", err)
+			log.Printf("Reading error : %v", err)
 			continue
 		}
-		log.Printf("Réception: %s", buffer[:n])
-
-		_, err = connection.WriteToUDP(buffer[:n], src)
-		if err != nil {
-			log.Printf("Erreur d'envoi vers %s : %v", src, err)
-		}
+		s.process(buffer[:n], src)
 	}
 }
 
 func (s *Server) Close() {
 	s.conn.Close()
+}
+
+func (s *Server) process(message []byte, src *net.UDPAddr) {
+	msg := string(message)
+
+	switch msg {
+	case "hello":
+		response := fmt.Sprintf("Hello, my name is %s", s.name)
+		_, err := s.conn.WriteToUDP([]byte(response), src)
+		if err != nil {
+			log.Printf("Error while sending to %s : %v", src, err)
+		}
+
+	case "bye":
+		response := fmt.Sprintln("Good bye")
+		_, err := s.conn.WriteToUDP([]byte(response), src)
+		if err != nil {
+			log.Printf("Error while sending to %s : %v", src, err)
+		}
+
+	default:
+		_, err := s.conn.WriteToUDP(message, src)
+		if err != nil {
+			log.Printf("Error while sending to %s : %v", src, err)
+		}
+	}
 }
