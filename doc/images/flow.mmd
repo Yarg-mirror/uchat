@@ -1,0 +1,66 @@
+---
+title: uchat lifecycle
+---
+
+stateDiagram-v2
+  state Configuration {
+    state c_if_config <<choice>>
+    state c_if_bootstrap <<choice>>
+    state c_if_peers <<choice>>
+
+    c_s1: config.json présent ?
+    c_s2: charge la configuration
+    c_s3: utilise la config par défaut
+    c_s4: bootstrap.json présent ?
+    c_s5: charge les adresse de bootstrap comme peers
+    c_s6: peers.json présent ?
+    c_s7: charge la liste des peers
+
+    [*] --> c_s1
+
+    c_s1 --> c_if_config
+    c_if_config --> c_s2: Oui
+    c_if_config --> c_s3: Non
+
+    c_s2 --> c_s4
+    c_s3 --> c_s4
+
+    c_s4 --> c_if_bootstrap
+    c_if_bootstrap --> c_s5: Oui
+    c_if_bootstrap --> c_s6: Non
+
+    c_s5 --> c_s6
+
+    c_s6 --> c_if_peers
+    c_if_peers --> c_s7: Oui
+    c_if_peers --> [*]: Non
+
+    c_s7 --> [*]
+  }
+
+  state Initialisation {
+    i_s1: Ecoute en UDP sur le port configuré
+
+    [*] --> Configuration
+    Configuration --> i_s1
+    i_s1 --> [*]
+  }
+
+  bs: Boucle serveur
+  bc: Boucle client
+
+  state bs {
+    bs_s1: Envoi une commande PING à chaque peer de sa liste
+    bs_s2: Reçoit une réponse PONG
+    bs_s3: Ne reçoit pas de réponse PONG
+  }
+
+  state bc {
+    bc_s1: Test boucle client
+  }
+
+  [*] --> Initialisation
+  Initialisation --> bs
+
+  [*] --> Initialisation
+  Initialisation --> bc

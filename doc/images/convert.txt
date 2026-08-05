@@ -1,0 +1,1 @@
+curl -H "Content-Type: text/plain" http://192.168.1.114:7000/mermaid/svg --data-binary @doc/images/flow.mmd -o doc/images/flow.svg

@@ -1,0 +1,15 @@
+---
+title: PING Sequence
+config:
+  sequence:
+    mirrorActors: false
+---
+
+sequenceDiagram
+    Participant Alice as Node
+    Participant Bob as Node
+
+    loop Inactivité > 120 ± 20 s
+        Alice->>Bob: MSG{ PING, Identité }
+        Bob->>Alice: MSG{ PONG, Identité }
+    end

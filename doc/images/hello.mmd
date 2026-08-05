@@ -1,0 +1,15 @@
+---
+title: HELLO Sequence
+config:
+  sequence:
+    mirrorActors: false
+---
+
+sequenceDiagram
+    Participant Alice as Node
+    Participant Bob as Node
+
+    Alice->>Bob: HELLO { pubKey }
+    Bob-->>Bob: Génère PSK
+    Bob->>Alice: HELLO_ACK { pubKey }
+    Alice-)Bob: See you later!

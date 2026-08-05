@@ -1,0 +1,20 @@
+shape: sequence_diagram
+
+node_1
+node_2
+
+startup: {
+  node_1.s0 -> node_1.s0: 'Load configuration'
+  node_1.s0 -> node_1.s0: 'Load nodes list'
+  node_1.s0 -> node_1.s0: 'Load message database'
+  node_1.s0 -> node_1.s0: 'Load pending message database'
+}
+
+node_1.s1 -> node_2.s1: 'HELLO'
+node_2.s1."Store IP:PORT of node_1"
+node_2.s1 -> node_1.s1: 'HELLO_ACK'
+
+node_1.s2 -> node_2.s2: 'ID {name, age, nodes_count}'
+node_2.s2 -> node_1.s2: 'ID {name, age, nodes_count}'
+
+
