@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -34,13 +35,13 @@ type configFileData struct {
 
 func (c *Config) Load() error {
 	err := os.Mkdir("config", 0750)
-	if err != nil && !errors.Is(err, os.ErrExist) {
+	if err != nil && errors.Is(err, os.ErrNotExist) {
 		log.Println("Impossible de créer le dossier config.")
 		return err
 	}
 
 	config, err := os.ReadFile("config/config.json")
-	if err != nil && err != os.ErrExist {
+	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			log.Println("Pas de configuration, création.")
 
@@ -54,7 +55,6 @@ func (c *Config) Load() error {
 			c.storage = NewStorage()
 			return nil
 		}
-
 		log.Printf("Erreur: %v\n", err)
 		return err
 	}
@@ -65,6 +65,15 @@ func (c *Config) Load() error {
 		log.Printf("Erreur: %v\n", err)
 		return err
 	}
+
+	c.port = uint16(data.Config.Port)
+	c.address = data.Config.Address
+	c.identity.name = data.Config.Identity.Name
+	c.identity.privKey, _ = base64.StdEncoding.DecodeString(data.Config.Identity.PrivKey)
+	c.identity.pubKey = c.identity.privKey.Public().(ed25519.PublicKey)
+	key, _ := base64.StdEncoding.DecodeString(data.Config.Storage.Key)
+	c.storage.key = [32]byte(key)
+
 	return nil
 }
 
@@ -80,7 +89,7 @@ func (c *Config) Save() error {
 	config.Config = configData
 
 	output, _ := json.MarshalIndent(config, "", "  ")
-	os.WriteFile("config/config2.json", output, 0640)
+	os.WriteFile("config/config.json", output, 0640)
 
 	return nil
 }
