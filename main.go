@@ -25,11 +25,19 @@ func randString(length int) string {
 }
 
 func main() {
-	serverName := flag.String("name", randString(32), "The server name")
+	var config Config
+	config.Load()
+
+	serverName := flag.String("name", randString(16), "The server name")
 	serverAddress := flag.String("address", "0.0.0.0", "The server listen address")
 	serverPort := flag.Int("port", 35498, "The server port")
 	message := flag.String("msg", "", "The message to send")
 	flag.Parse()
+
+	config.SetName(*serverName)
+	config.SetPort(uint16(*serverPort))
+	config.SetAddress(*serverAddress)
+	config.Save()
 
 	if *message == "" {
 		server := server.New(*serverName, *serverPort)
