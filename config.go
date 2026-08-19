@@ -84,8 +84,14 @@ func (c *Config) Load() error {
 	c.identity.name = data.Config.Identity.Name
 	c.identity.privKey, _ = base64.StdEncoding.DecodeString(data.Config.Identity.PrivKey)
 	c.identity.pubKey = c.identity.privKey.Public().(ed25519.PublicKey)
-	mboxPrivKey, err := x509.ParsePKCS8PrivateKey([]byte(data.Config.Mailbox.PrivKey))
-	c.mailbox.privKey = *mboxPrivKey.(*ecdh.PrivateKey)
+	decodedPrivKey, err := base64.StdEncoding.DecodeString(data.Config.Mailbox.PrivKey)
+	mboxPrivKey, err := x509.ParsePKCS8PrivateKey(decodedPrivKey)
+	switch mboxPrivKey.(type) {
+	case (*ecdh.PrivateKey):
+		c.mailbox.privKey = *mboxPrivKey.(*ecdh.PrivateKey)
+	default:
+		panic("test")
+	}
 	c.mailbox.pubKey = *c.mailbox.privKey.PublicKey()
 	c.identity.privKey, _ = base64.StdEncoding.DecodeString(data.Config.Identity.PrivKey)
 	c.identity.pubKey = c.identity.privKey.Public().(ed25519.PublicKey)
