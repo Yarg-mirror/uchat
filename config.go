@@ -41,7 +41,7 @@ type configFileData struct {
 
 func (c *Config) Load() error {
 	err := os.Mkdir("config", 0750)
-	if err != nil && errors.Is(err, os.ErrNotExist) {
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		log.Println("Impossible de créer le dossier config.")
 		return err
 	}
@@ -93,8 +93,6 @@ func (c *Config) Load() error {
 		panic("test")
 	}
 	c.mailbox.pubKey = *c.mailbox.privKey.PublicKey()
-	c.identity.privKey, _ = base64.StdEncoding.DecodeString(data.Config.Identity.PrivKey)
-	c.identity.pubKey = c.identity.privKey.Public().(ed25519.PublicKey)
 	key, _ := base64.StdEncoding.DecodeString(data.Config.Storage.Key)
 	c.storage.key = [32]byte(key)
 
