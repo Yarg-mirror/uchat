@@ -20,26 +20,10 @@ type Config struct {
 	storage  Storage
 }
 
-type configFile struct {
-	Config configFileData `json:"config"`
-}
-
-type configFileData struct {
-	Port     uint16 `json:"port"`
-	Address  string `json:"address"`
-	Identity struct {
-		Name    string `json:"name"`
-		PrivKey string `json:"privkey"`
-	} `json:"identity"`
-	Mailbox struct {
-		PrivKey string `json:"privkey"`
-	} `json:"mailbox"`
-	Storage struct {
-		Key string `json:"key"`
-	} `json:"storage"`
-}
-
 func (c *Config) Load() error {
+	var data = ConfigFile{}
+	data.Load("config/config.json")
+
 	err := os.Mkdir("config", 0750)
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		log.Println("Impossible de créer le dossier config.")
@@ -49,7 +33,7 @@ func (c *Config) Load() error {
 	config, err := os.ReadFile("config/config.json")
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			log.Println("Pas de configuration, création.")
+			log.Println("Configuration non trouvée à l'emplacement config/config.json, création.")
 
 			id, err := NewIdentity()
 			if err != nil {
@@ -72,7 +56,6 @@ func (c *Config) Load() error {
 		return err
 	}
 
-	var data configFile
 	err = json.Unmarshal(config, &data)
 	if err != nil {
 		log.Printf("Erreur: %v\n", err)
@@ -100,8 +83,8 @@ func (c *Config) Load() error {
 }
 
 func (c *Config) Save() error {
-	var config configFile
-	var configData configFileData
+	var config ConfigFile
+	var configData ConfigFileData
 
 	configData.Port = c.port
 	configData.Address = c.address
