@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"errors"
 )
 
 type Identity struct {
@@ -24,4 +25,12 @@ func NewIdentity() (Identity, error) {
 		privKey: privKey,
 		pubKey:  pubKey,
 	}, nil
+}
+
+func (id *Identity) Sign(message []byte) ([]byte, error) {
+	if len(id.privKey) != ed25519.PrivateKeySize {
+		err := errors.New("Signing failed")
+		return make([]byte, 0), err
+	}
+	return ed25519.Sign(id.privKey, message), nil
 }
